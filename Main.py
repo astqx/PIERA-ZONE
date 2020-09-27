@@ -21,9 +21,11 @@ import Teacher
 def dataCollection(): #Pre-launch data collection 
     global exam_name, exam_folder, parent_folder, pznx, itime
     try:
-        parent_folder = 'My Exams'
+        parent_folder = os.path.join(os.getcwd(),'My Exams')
         history = '__History__'
         pznx = os.listdir(parent_folder)
+        if '.DS_Store' in pznx: #Only for macOS
+            pznx.remove('.DS_Store')
         if pznx[0] == history:
             pznx = pznx[1]
         else:
@@ -290,14 +292,14 @@ def Ques_Disp_GUI(): #Exam GUI
             revList.remove(qno)
             mafore.set('Select Question')
             rev['menu'].delete(0, 'end')
-            rev_butList[qno-1].configure(bg = 'RoyalBlue', text = '  Mark for Review  ')
+            rev_butList[qno-1].configure(fg = 'black', text = '  Mark for Review  ')
             Thread(target = refreshMforMenu, args = [qno]).start()
             
         else:
             revList.append(qno)
             mafore.set('Select Question')
             rev['menu'].delete(0, 'end')
-            rev_butList[qno-1].configure(bg = 'orange', text = '  Unmark for Review  ')
+            rev_butList[qno-1].configure(fg = 'orange', text = '  Unmark for Review  ')
             Thread(target = refreshMforMenu, args = [qno]).start()
     
     def cont_display(): #Sets up the content to be displayed during exam
@@ -365,11 +367,11 @@ def Ques_Disp_GUI(): #Exam GUI
             text.window_create("end", window=ent)
 
             #Navigation/Marking Buttons
-            prev = Button(main_frame, text = "  Previous  ", font=("Havelika",12), command = lambda temp = temp: seek_prev(temp), bg = 'RoyalBlue', fg = 'white', relief = 'flat')
+            prev = Button(main_frame, text = "  Previous  ", font=("Havelika",12), command = lambda temp = temp: seek_prev(temp), relief = 'flat')
             prev_butList.append(prev)
-            mfr = Button(main_frame, text = "  Mark for Review  ", font=("Sans",12), command = lambda temp = temp: mfor(temp), bg = 'RoyalBlue', fg = 'white', relief = 'flat')
+            mfr = Button(main_frame, text = "  Mark for Review  ", font=("Sans",12), command = lambda temp = temp: mfor(temp), relief = 'flat')
             rev_butList.append(mfr)
-            nex = Button(main_frame, text = "  Next  ", font=("Havelika",12), command = lambda temp = temp: seek_next(temp), bg = 'RoyalBlue', fg = 'white', relief = 'flat')
+            nex = Button(main_frame, text = "  Next  ", font=("Havelika",12), command = lambda temp = temp: seek_next(temp), relief = 'flat')
             next_butList.append(nex)
             text.insert("end", " "*13)
             text.window_create("end", window=prev)
@@ -411,8 +413,12 @@ def Ques_Disp_GUI(): #Exam GUI
         for i in range (0, len(sections)):
             qnoList = []
             if sections[i] == 0:
-                for qno in range(0, sections[i+1]+1):
-                    qnoList.append("Question "+str(qno))
+                try:
+                    for qno in range(0, sections[i+1]+1):
+                        qnoList.append("Question "+str(qno))
+                except:
+                    for qno in range(sections[-1], ques_count+1):
+                        qnoList.append("Question "+str(qno))
             else:
                 try:
                     for qno in range(sections[i], sections[i+1]+1):
@@ -461,7 +467,7 @@ def Ques_Disp_GUI(): #Exam GUI
         load.destroy()
         #Threads
         time_th = Thread(target = timer).start()
-        mon_th = Thread(target = Monitor).start()
+        #mon_th = Thread(target = Monitor).start()
 
     def ans_append(): #Appends the responses to the answers list
         global res_var, answers
@@ -496,12 +502,16 @@ def Ques_Disp_GUI(): #Exam GUI
         log = Label(send, image = logo)
         log.image = logo
         log.grid(row = 0, column = 0, rowspan = 2, padx = 20, pady = 20)
-        term.destroy()
+        try:
+            term.destroy()
+        except:
+            pass
         try:
             mail.Send_response(res_email)
             sts.set("Email has been sent successfully!")
             but.config(state = 'normal')
         except Exception as e:
+            print(e)
             sts.set(("Failed to send Email!\n"
                      +"This may happend due to various reasons, see USER GUIDE.\n"
                      +"A local copy of your response has been saved.\n"
@@ -823,7 +833,7 @@ def uType(): #User type
     cache_dir = os.path.join(prog_dir, 'Cache')
 
     def set_org():
-        with open(f"{cache_dir}\\UsageType.txt", 'w') as file:
+        with open(os.path.join(cache_dir, "UsageType.txt"), 'w') as file:
             file.truncate()
             file.write('0')
             file.close()
@@ -832,7 +842,7 @@ def uType(): #User type
         disp_type()
 
     def set_ind():
-        with open(f"{cache_dir}\\UsageType.txt", 'w') as file:
+        with open(os.path.join(cache_dir, "UsageType.txt"), 'w') as file:
             file.truncate()
             file.write('1')
             file.close()
@@ -844,16 +854,16 @@ def uType(): #User type
     head_lab.pack(side = 'top', pady = 20, padx = 20)
     org_frame = Frame(utype, bg = 'white', highlightthickness = 1, highlightbackground = 'black')
     org_frame.pack(side = 'top', fill = 'x', padx = 20, pady = (0,20))
-    org_but = Button(org_frame, text = 'ORGANISATION', font = ('Roboto', 15), relief = 'flat', command = set_org, bg = 'RoyalBlue4', fg = 'white')
+    org_but = Button(org_frame, text = 'ORGANISATION', font = ('Roboto', 15), relief = 'flat', command = set_org)
     org_but.pack(fill = 'both')
     ind_frame = Frame(utype, bg = 'white', highlightthickness = 1, highlightbackground = 'black')
     ind_frame.pack(side = 'top', fill = 'x', padx = 20, pady = (0,20))
-    ind_but = Button(ind_frame, text = 'INDIVIDUAL', font = ('Roboto', 15), relief = 'flat', command = set_ind, bg = 'RoyalBlue4', fg = 'white')
+    ind_but = Button(ind_frame, text = 'INDIVIDUAL', font = ('Roboto', 15), relief = 'flat', command = set_ind)
     ind_but.pack(fill = 'both')
 
 def disp_type(): #Diaplay user type
     try:
-        with open(f"{cache_dir}\\UsageType.txt", 'r') as file:
+        with open(os.path.join(cache_dir, "UsageType.txt"), 'r') as file:
             typ = file.read()
             file.close()
         if typ == '0':
@@ -861,20 +871,20 @@ def disp_type(): #Diaplay user type
         else:
             config_lab.configure(text = 'INDIVIDUAL')
     except:
-        with open(f"{cache_dir}\\UsageType.txt", 'w+') as file:
+        with open(os.path.join(cache_dir, "UsageType.txt"), 'w+') as file:
             file.write('0')
             file.close()
         disp_type()
     
 #File paths
 global data_dir, cache_dir, prog_dir
-prog_dir = 'Program Files'
+prog_dir = os.path.join(os.getcwd(),'Program Files') #Optimized
 data_dir = os.path.join(prog_dir, 'Data Files')
 cache_dir = os.path.join(prog_dir, 'Cache')
 
 def setup(temp_win): #Standard setup for all windows
     temp_win.resizable(False, False)
-    temp_win.iconbitmap(os.path.join(data_dir, 'logo.ico'))
+    temp_win.iconbitmap(os.path.join(data_dir, 'logo.icns'))
 def cpyrc(): #Copyright badge
     webbrowser.open("https://github.com/AST07/PIERA-ZONE")
 #__Main GUI__
@@ -914,7 +924,7 @@ config_lab = Label(initial, fg = 'red')
 canvas.create_window(90, 20, anchor = 'se', window=config_lab)
 disp_type()
 global logo #Logo image
-logo_img = Image.open (os.path.join(data_dir, 'logo.png'))
+logo_img = Image.open (os.path.join(os.getcwd(),data_dir, 'logo.png'))
 logo_img = logo_img.resize((200, 200), Image.ANTIALIAS)
 logo = ImageTk.PhotoImage(logo_img)
 global screen_width, screen_height
