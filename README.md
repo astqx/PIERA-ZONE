@@ -1,5 +1,5 @@
 # PIERA-ZONE
-![PIERA-ZONE](https://lh4.googleusercontent.com/tlgimyVJagd0DSuMwbWY38YPB5CEwd8OWgjpnDtZHgd_59tvkLsewCNM8dbgh7HGqNAxABDK=w1280)
+![](https://github.com/AST07/PIERA-ZONE/blob/v1.2.1-win/Resources/Banner.png)
 
 PIERA-ZONE is a free digital examination tool which enables you to conduct professional and robust exams, free of malpractices with minimal hassle.
 
