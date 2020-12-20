@@ -4,7 +4,6 @@
 ![GitHub Release Date](https://img.shields.io/github/release-date/ast07/piera-zone)
 ![GitHub issues](https://img.shields.io/github/issues/AST07/piera-zone) ![GitHub last commit](https://img.shields.io/github/last-commit/ast07/piera-zone)
 ![](https://img.shields.io/twitter/url?style=social&url=https%3A%2F%2Ftwitter.com%2FPieraZone)
-![](https://img.shields.io/github/followers/AST07?style=social)
 
 ![](https://github.com/AST07/PIERA-ZONE/blob/v1.2.1-win/Resources/Banner.png)
 
