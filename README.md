@@ -1,4 +1,4 @@
-# [PIERA-ZONE](https://www.pierazone.online)
+# [PIERA-ZONE](https://pierazone.github.io/)
 ![GitHub](https://img.shields.io/github/license/AST07/PIERA-ZONE) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/AST07/PIERA-ZONE)
 ![GitHub release (latest by date)](https://img.shields.io/github/downloads/AST07/PIERA-ZONE/v1.2.1-win/total)
 ![GitHub Release Date](https://img.shields.io/github/release-date/ast07/piera-zone)
