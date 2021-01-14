@@ -47,7 +47,7 @@ def Send_results(res_email, filename, name): #Send student results to the studen
             +"Cheers\n© 2020 PIERA-ZONE")           
     sender_email = "piera_zone@yahoo.com"
     receiver_email = res_email 
-    password = "dvgayjfvlajmpviu"
+    password = "<APP_SECRET_KEY>"
     message = MIMEMultipart()
     message["From"] = sender_email
     message["To"] = receiver_email
