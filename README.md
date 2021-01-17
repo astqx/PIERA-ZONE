@@ -10,8 +10,12 @@ PIERA-ZONE is a free digital examination tool which enables you to conduct profe
 
 # [User Guide](https://pierazone.github.io/user-guide)
 
-# [Developers](https://pierazone.github.io/about)
+## Developers
 
 * Aditya Singh Tejas
 * Aditya Sharma
 * Rikhil Gupta
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/C0C537WQA)
+[![liberapay](https://liberapay.com/assets/widgets/donate.svg)](https://liberapay.com/pierazone/donate)
+[![paypal.me](https://img.shields.io/static/v1?label=Donate&message=paypal&color=blue&logo=paypal&colorA=yellow&style=for-the-badge)](https://paypal.me/pierazone)
