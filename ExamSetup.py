@@ -5,10 +5,12 @@ from tkinter.filedialog import askopenfilename
 from threading import Thread
 from PIL import Image, ImageTk
 import os
-import re
 import zipfile
+import KeyEditor
+from threading import Thread
 
 #GUI Initialization 
+global root
 root = Toplevel()
 file_dir = os.path.join('Program Files', 'Data Files')
 root.title('PIERA-ZONE Exam Setup')
@@ -77,13 +79,28 @@ def addSec(event = None): #Add Section
     sec_text.insert('end', '\n\n')
     sec_text.configure(state = 'disabled')
 
-def addParentheses(event = None):
-    key_text.focus_set()
-    key_text.insert('insert', '(),')
-    pos = key_text.index('insert')
-    line = int(pos.split('.')[0])
-    char = int(pos.split('.')[1])
-    key_text.mark_set('insert', "%d.%d" % (line,char-2))
+def launchEditor(key): #Added v1.2
+
+    def check():
+        if editor.winfo_exists()==0:
+            on_close()
+        else:
+            root.after(100,check)
+
+    def on_close():
+        global key_text
+        cache_dir=os.path.join('Program Files','Cache')
+        with open(os.path.join(cache_dir,'TempKey.txt'),'r') as file:
+            data=file.read()
+            file.close()
+        key_text.delete('1.0', END)
+        key_text.insert('1.0', data)
+
+    editor=Toplevel()
+    editor.title('Answer Key Editor')
+    editor.iconbitmap(os.path.join(file_dir,'logo.ico'))
+    Thread(target=KeyEditor.Editor(key, editor).pack(side="top", fill="both", expand=True)).start()
+    Thread(target=check).start()    
 
 #__Processing__
 markings = []
@@ -110,11 +127,14 @@ def finish():
         instructions = inst_text.get('1.0', 'end-1c')
         #Convert the Key to usable format
         final_key = []
-        key_list = re.findall(r"\(([a-d,0-9]+)\)", ans_key)
-        for key in key_list:
-            key = key.split(',')
+        key_list = ans_key.split('\n')
+        for key in key_list: #Issue 1 Fixed
+            key=key.split(',')
+            for k in range(len(key)):
+                if key[k][0]!="/":
+                    key[k]=str(key[k])
             temp = ['False', 'False', 'False', 'False', '']
-            for i in range(0,4):
+            for i in range(0,5):
                 try:
                     if key[i] == 'a':
                         temp[0] = 'True'
@@ -124,8 +144,8 @@ def finish():
                         temp[2] = 'True'
                     if key[i] == 'd':
                         temp[3] = 'True'
-                    if type(int(key[i])) == int:
-                        temp[4] = str(key[i])
+                    if key[i][0] == "/": #Edited to new format v1.2+
+                        temp[4] = key[i][1:]
                 except:
                     continue
             for k in temp:
@@ -136,7 +156,6 @@ def finish():
             file.write(str(final_key))
             file.close()
         with open(os.path.join(raw_dir, f'{exam_name} Details.pzn'), 'w+') as file:
-            #file.write("'"+exam_name+"'"+','+exam_duration+','+"'"+to_email+"'"+','+str(sections))+','+inst_duration
             file.write(f"'{exam_name}',{exam_duration},'{to_email}',{sections},{inst_duration}")
             file.close()
         with open(os.path.join(raw_dir, f'{exam_name} Instructions.pzn'), 'w+') as file:
@@ -188,9 +207,12 @@ def finish():
                 raw_dir = os.path.join(main_dir, 'Raw Data')
                 os.mkdir(main_dir)
                 os.mkdir(raw_dir)
+                fail=0
             except:
                 messagebox.showerror('Error', "Failed to create Exam!\n An exam with same name exists\n"
                             +"Please Delete/Rename the existing/currrent.")
+                fail=1
+        if fail==0: #added v1.2
             process()
     except:
         messagebox.showinfo('Warning', "An error occured!\nPlease try again.")
@@ -280,7 +302,7 @@ key_frame.pack(padx = 10, pady = (0,10), side = 'top', anchor = 'w')
 top_key_frame = Frame(key_frame, bg = barbg)
 top_key_frame.pack(side = 'top', fill = 'x', pady = (0, 10))
 opt = StringVar()
-add_but = ttk.Button(top_key_frame, text = 'Insert', command = addParentheses)
+add_but = ttk.Button(top_key_frame, text = 'Open Editor', command = lambda: launchEditor(key_text.get('1.0', 'end-1c')))
 add_but.pack(side = 'right', anchor = 's', padx = 10)
 lab = Label(top_key_frame, text = 'Answer Key', bg = barbg, font = ('Roboto', 12), fg = 'white')
 lab.pack(side = 'left', anchor = 'w', fill = 'x', padx = 10)
@@ -289,11 +311,10 @@ disp_key_frame.pack(side = 'bottom', fill = 'both')
 key_text_frame = Frame(disp_key_frame, width = 410, height = 92, bg = 'white')
 key_text_frame.pack(side = 'left', expand = False, fill = 'x')
 key_text_frame.pack_propagate(False)
-key_text = Text(key_text_frame, font = ('Roboto', 12), wrap = 'word', bd = 0)
+key_text = Text(key_text_frame, font = ('Consolas', 12), wrap = 'word', bd = 0)
 key_vsb = Scrollbar(disp_key_frame, command = key_text.yview)
 key_text.configure(yscrollcommand = key_vsb.set)
 key_text.pack(padx = 10, pady = (0, 10), fill = 'x')
 key_vsb.pack(side = 'right', fill = 'y', padx = (0, 10), pady = (0, 10))
-root.bind('<Control-q>', addParentheses)
 root.bind('<Control-w>', addSec)
 root.mainloop()

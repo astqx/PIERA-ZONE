@@ -16,6 +16,8 @@ from prettytable import PrettyTable
 from fpdf import FPDF
 import requests
 import csv
+import sys
+import KeyEditor
 
 def Evaluate(): #Evaluation GUI
 	evalt = Toplevel()
@@ -146,7 +148,17 @@ def Evaluate(): #Evaluation GUI
 					score=score+cor
 					correctqs.append(ques)
 				else:
-					if j[0] == j[1] == j[2] == j[3] == 'False' and j[4] == '': 
+					if i[-1]=='<b>': #Edited to new format v1.2+ (Blank keys)
+						status.append("N/A")
+						obtainedmarks.append(0)
+						i[-1]="N/A"
+					elif re.search("\<b>.*?\</b>", i[-1]):#Edited to new format v1.2.1+ (Blank keys)
+						vals=i[-1][3:-4].split(' ')
+						status.append(vals[2])
+						obtainedmarks.append(vals[0])
+						score+=int(vals[0])
+						i[-1]=vals[1]
+					elif j[0] == j[1] == j[2] == j[3] == 'False' and j[4] == '': 
 						status.append("Unattempted")
 						obtainedmarks.append(unat)
 						score=score+unat
@@ -156,7 +168,7 @@ def Evaluate(): #Evaluation GUI
 						obtainedmarks.append(wro)
 						score=score+wro
 						wrongqs.append(ques)	
-				if ques == tpattern[0]:
+				if len(tpattern)!=0 and ques == tpattern[0]: #Issue 3 Fixed
 					del tmarking[0:3]
 					if len(tpattern) != 1:
 						del tpattern[0]
@@ -221,7 +233,7 @@ def Evaluate(): #Evaluation GUI
 				values = (roll,name,batch,email,others,score)
 				db.addRecord(f'{exam}', values)
 				emails.append(email)
-			except:
+			except Exception as e:
 				pass
 			prog += ((1/total)*100)
 			progress['value'] = prog
@@ -234,13 +246,28 @@ def Evaluate(): #Evaluation GUI
 
 	def editKey():
 
-		def addParentheses(event = None):
-			key_text.focus_set()
-			key_text.insert('insert', '(),')
-			pos = key_text.index('insert')
-			line = int(pos.split('.')[0])
-			char = int(pos.split('.')[1])
-			key_text.mark_set('insert', "%d.%d" % (line,char-2))
+		def launchEditor(key): #Added v1.2
+
+		    def check():
+		        if editor.winfo_exists()==0:
+		            on_close()
+		        else:
+		            ask.after(100,check)
+
+		    def on_close():
+		        global key_text
+		        cache_dir=os.path.join('Program Files','Cache')
+		        with open(os.path.join(cache_dir,'TempKey.txt'),'r') as file:
+		            data=file.read()
+		            file.close()
+		        key_text.delete('1.0', END)
+		        key_text.insert('1.0', data)
+
+		    editor=Toplevel()
+		    editor.title('Answer Key Editor')
+		    editor.iconbitmap(os.path.join(file_dir,'logo.ico'))
+		    Thread(target=KeyEditor.Editor(key, editor).pack(side="top", fill="both", expand=True)).start()
+		    Thread(target=check).start()
 
 		def adecrypt(val):
 			final_str = ''
@@ -253,22 +280,26 @@ def Evaluate(): #Evaluation GUI
 			if val[3] == 'True':
 				final_str += 'd,'
 			if val[4] != '':
-				final_str += val[4]
+				final_str += f"/{val[4]}" #Edited to new format v1.2+
 			try:
 				if final_str[-1] == ',':
 					final_str = final_str[:-1]
 			except:
 				pass
-			final_str = f"({final_str}),"
+			final_str = f"{final_str}\n" #Edited to new format v1.2+
 			return final_str
 
 		def saveKey():
 			final_key = []
-			key_list = re.findall(r"\(([a-d,0-9]+)\)", key_text.get('1.0', 'end-1c'))
-			for key in key_list:
-				key = key.split(',')
+			ans_key=key_text.get('1.0','end-1c')
+			key_list = ans_key.split('\n')
+			for key in key_list: #Issue 1 Fixed
+				key=key.split(',')
+				for k in range(len(key)):
+					if key[k][0]!="/":
+						key[k]=str(key[k])
 				temp = ['False', 'False', 'False', 'False', '']
-				for i in range(0,4):
+				for i in range(0,5):
 					try:
 						if key[i] == 'a':
 							temp[0] = 'True'
@@ -278,8 +309,8 @@ def Evaluate(): #Evaluation GUI
 							temp[2] = 'True'
 						if key[i] == 'd':
 							temp[3] = 'True'
-						if type(int(key[i])) == int:
-							temp[4] = str(key[i])
+						if key[i][0] == "/": #Edited to new format v1.2+
+							temp[4] = key[i][1:]
 					except:
 						continue
 				for k in temp:
@@ -305,12 +336,15 @@ def Evaluate(): #Evaluation GUI
 			beg = 0
 			end = 5
 			for k in range(0, len(key_data)//5):
-				insert_key += adecrypt(key_data[beg:end])
+				if k!= len(key_data)//5:
+					insert_key += adecrypt(key_data[beg:end])
+				else:
+					insert_key += adecrypt(key_data[beg:end][:-2])
 				beg += 5
 				end += 5
-			return insert_key
+			return insert_key[:-1]
 
-		global key_edit
+		global key_edit, key_text
 		key_edit = Toplevel()
 		key_edit.title('Edit Answer Key')
 		setup(key_edit)
@@ -321,7 +355,7 @@ def Evaluate(): #Evaluation GUI
 		top_key_frame = Frame(key_frame, bg = 'RoyalBlue4')
 		top_key_frame.pack(side = 'top', fill = 'x', pady = (0, 10))
 		opt = StringVar()
-		add_but = ttk.Button(top_key_frame, text = 'Insert', command = addParentheses)
+		add_but = ttk.Button(top_key_frame, text = 'Open Editor', command = lambda: launchEditor(key_text.get('1.0','end-1c')))
 		add_but.pack(side = 'right', anchor = 's', padx = 10)
 		lab = Label(top_key_frame, text = 'Answer Key', bg = 'RoyalBlue4', font = ('Roboto', 12), fg = 'white')
 		lab.pack(side = 'left', anchor = 'w', fill = 'x', padx = 10)
@@ -330,13 +364,12 @@ def Evaluate(): #Evaluation GUI
 		key_text_frame = Frame(disp_key_frame, width = 410, height = 92, bg = 'white')
 		key_text_frame.pack(side = 'left', expand = False, fill = 'x')
 		key_text_frame.pack_propagate(False)
-		key_text = Text(key_text_frame, font = ('Roboto', 12), wrap = 'word', bd = 0)
+		key_text = Text(key_text_frame, font = ('Consolas', 12), wrap = 'word', bd = 0)
 		key_vsb = Scrollbar(disp_key_frame, command = key_text.yview)
 		key_text.configure(yscrollcommand = key_vsb.set)
 		key_text.pack(padx = 10, pady = (0, 10), fill = 'x')
 		key_vsb.pack(side = 'right', fill = 'y', padx = (0, 10), pady = (0, 10))
-		key_edit.bind('<Control-q>', addParentheses)
-		key_text.insert(END, retrieveKey())
+		key_text.insert('1.0', retrieveKey())
 
 	def conKey():
 		global keycon
@@ -507,13 +540,18 @@ def Results(): #Results GUI
 	sbut.pack(side = 'right', pady = 10, padx = (10,0))
 
 def AskOpen(): #Ask for New Exam/Evaluate
+	global ask
 	ask = Toplevel()
 	ask.title('Teacher')
 	setup(ask)
 	ask.configure(bg = 'white')
 
 	def openNew(): #Open PZ Exam Editor
-		import ExamSetup
+		if 'ExamSetup' not in sys.modules: #Issue 1 Fixed
+			import ExamSetup
+		else:
+			del sys.modules["ExamSetup"]
+			import ExamSetup
 
 	def openEval(): #Open PZ Evaluation
 		Evaluate()

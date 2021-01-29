@@ -71,10 +71,3 @@ def Send_results(res_email, filename, name): #Send student results to the studen
 
 global root_dir
 root_dir = os.path.join('Program Files', 'Cache')
-
-
-
-
-
-
-   

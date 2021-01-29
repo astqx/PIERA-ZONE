@@ -88,10 +88,14 @@ def Ques_Disp_GUI(): #Exam GUI
 
     def Monitor(): #PZ Monitor ensures exam is terminated if exam window's focus changes
         global esc_mb, confs
-        while True:
+        '''while True:
             if not ques_win.focus_get():
                 Thread(target = Terminate).start()
-                break
+                break'''
+        if ques_win.focus_get():
+            ques_win.after(1000, Monitor)
+        else:
+            Thread(target = Terminate).start()
 
     def final_submit(): #Initiates the submission process (COULD HAVE BEEN OMITTED)
         ans_append()
@@ -411,8 +415,12 @@ def Ques_Disp_GUI(): #Exam GUI
         for i in range (0, len(sections)):
             qnoList = []
             if sections[i] == 0:
-                for qno in range(0, sections[i+1]+1):
-                    qnoList.append("Question "+str(qno))
+                try: #Issue 3 Fixed
+                    for qno in range(0, sections[i+1]+1):
+                        qnoList.append("Question "+str(qno))
+                except:
+                    for qno in range(sections[-1], ques_count+1):
+                        qnoList.append("Question "+str(qno))
             else:
                 try:
                     for qno in range(sections[i], sections[i+1]+1):
@@ -496,7 +504,10 @@ def Ques_Disp_GUI(): #Exam GUI
         log = Label(send, image = logo)
         log.image = logo
         log.grid(row = 0, column = 0, rowspan = 2, padx = 20, pady = 20)
-        term.destroy()
+        try:    
+            term.destroy()  
+        except: 
+            pass
         try:
             mail.Send_response(res_email)
             sts.set("Email has been sent successfully!")
