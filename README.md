@@ -1,8 +1,8 @@
-<pre>
-  <a href="https://pierazone.github.io/">
-    <p align="center"><img src="https://pierazone.github.io/resources/banner_white.svg" width=550/></p>
-  </a>
-</pre>
+<br><br><br>
+<a href="https://pierazone.github.io/">
+  <p align="center"><img src="https://github.com/AST07/development/blob/main/banner_bg.svg" width=640/></p>
+</a>
+<br><br><br>
 
 ![GitHub](https://img.shields.io/github/license/AST07/PIERA-ZONE) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/AST07/PIERA-ZONE)
 ![GitHub release (latest by date)](https://img.shields.io/github/downloads/AST07/PIERA-ZONE/v1.2.1-win/total)
