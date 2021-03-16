@@ -1,6 +1,6 @@
 <br><br><br>
 <a href="https://pierazone.github.io/">
-  <p align="center"><img src="https://github.com/AST07/development/blob/main/banner_bg.svg" width=640/></p>
+  <p align="center"><img src="https://github.com/AST07/random/blob/main/banner_bg.svg" width=640/></p>
 </a>
 <br><br><br>
 
